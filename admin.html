@@ -8,12 +8,12 @@
 /* --- General body --- */
 body {
   font-family: 'Segoe UI', Arial, sans-serif;
-  background: linear-gradient(135deg, #fff8f0 0%, #f5f5f5 100%);
+  /* background: linear-gradient(135deg, #fff8f0 0%, #f5f5f5 100%); */
   margin: 0;
   padding: 24px;
   color: #222;
-  background: #000 !important;
-  color: #f2f2f2 !important;
+  background: #0c3d17;
+  color: #f2f2f2;
 }
 
 #santa-sleigh {
@@ -332,7 +332,7 @@ const $ = id=>document.getElementById(id);
 const urlParams = new URLSearchParams(location.search);
 const room = urlParams.get('room');
 const userId = urlParams.get('userId');
-const PRESETS = ["Chocolates","Books","Plants","Stationery","Tech/Gadgets","Coffee/Tea","Socks/Warm items","Surprise me"];
+const PRESETS = ["Chocolates","Books","Plants","Stationery","Tech/Gadgets","Coffee/Tea","Decor","Games"];
 const IMAGES = {
   "Chocolates": "https://img.icons8.com/color/48/000000/chocolate-bar.png",
   // "Skincare": "https://img.icons8.com/color/48/000000/face-cream.png",
@@ -341,9 +341,9 @@ const IMAGES = {
   "Plants": "https://img.icons8.com/color/48/000000/potted-plant.png",
   "Stationery": "https://img.icons8.com/color/48/000000/pencil.png",
   "Tech/Gadgets": "https://img.icons8.com/color/48/000000/smartphone.png",
-  "Coffee/Tea": "https://img.icons8.com/color/48/000000/coffee.png",
-  "Socks/Warm items": "https://img.icons8.com/color/48/000000/socks.png",
-  "Surprise me": "https://img.icons8.com/color/48/000000/gift.png"
+  "Coffee/Tea": "./coffee.png",
+  "Decor": "./decor.png",
+  "Games": "./game-controller.png"
 
   // "Chocolates": "https://img.icons8.com/fluency/48/000000/chocolate-bar.png",
   // "Skincare": "https://img.icons8.com/color/48/000000/face-cream.png",
@@ -590,3 +590,4 @@ loadAdmin();
 </div>
 </body>
 </html>
+
