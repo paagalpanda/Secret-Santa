@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Secret Santa — Login / Signup</title>
+<style>
+  body{font-family:Arial,sans-serif;background:#fff8f5;padding:24px;color:#222;}
+  .card{max-width:500px;margin:50px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+  h1{color:#b71c1c;margin:0 0 12px 0}
+  label{display:block;margin-top:12px;font-weight:600}
+  input,button{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;margin-top:6px;box-sizing:border-box}
+  .btn-pri{background:#b71c1c;color:#fff;border:none;cursor:pointer;margin-top:12px}
+  .toggle-link{margin-top:12px;color:#b71c1c;cursor:pointer;text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="card">
+<h1 id="formTitle">Login</h1>
+<label>Username</label>
+<input id="username" placeholder="Enter username"/>
+<label>Password</label>
+<input type="password" id="password" placeholder="Enter password"/>
+<div class="row">
+<button id="submitBtn" class="btn-pri">Login</button>
+</div>
+<div class="toggle-link" id="toggleForm">Switch to Signup</div>
+<div id="message" style="margin-top:12px;color:#b71c1c;"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
+import { getDatabase, ref, set, get, push, child } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBrtZ7ZOlJi58Ff7hr-0qlF9jzVifVoBMY",
+  authDomain: "secret-santa-ac0f2.firebaseapp.com",
+  databaseURL: "https://secret-santa-ac0f2-default-rtdb.firebaseio.com",
+  projectId: "secret-santa-ac0f2",
+  storageBucket: "secret-santa-ac0f2.firebasestorage.app",
+  messagingSenderId: "1059165518816",
+  appId: "1:1059165518816:web:f20a754751db08442dc985"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const $ = id=>document.getElementById(id);
+
+const urlParams = new URLSearchParams(location.search);
+const room = urlParams.get('room');
+if(!room) $('message').textContent='Room not specified in URL';
+
+let isLogin = true;
+$('toggleForm').addEventListener('click', ()=>{
+  isLogin = !isLogin;
+  $('formTitle').textContent = isLogin ? 'Login' : 'Signup';
+  $('submitBtn').textContent = isLogin ? 'Login' : 'Signup';
+});
+
+async function hashPassword(pw){
+  const enc = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(pw));
+  return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+$('submitBtn').addEventListener('click', async ()=>{
+  const username = $('username').value.trim();
+  const password = $('password').value.trim();
+  if(!username || !password) return $('message').textContent='Enter username & password';
+  const participantsRef = ref(db, `rooms/${room}/participants`);
+  const snap = await get(participantsRef);
+  const participants = snap.val() || {};
+
+  if(isLogin){
+    // Login
+    const userEntry = Object.entries(participants).find(([id,u])=>u.username===username);
+    if(!userEntry) return $('message').textContent='User not found';
+    const [userId, user] = userEntry;
+    const passwordHash = await hashPassword(password);
+    if(user.passwordHash !== passwordHash) return $('message').textContent='Incorrect password';
+
+    // redirect based on role
+    const dest = user.isAdmin ? 'admin.html' : 'account.html';
+    location.href = `${dest}?room=${encodeURIComponent(room)}&userId=${encodeURIComponent(userId)}`;
+  } else {
+    // Signup
+    const exists = Object.values(participants).some(u=>u.username===username);
+    if(exists) return $('message').textContent='Username already exists';
+    const passwordHash = await hashPassword(password);
+    const userRef = push(participantsRef);
+    const userId = userRef.key;
+    await set(userRef, { username, name: username, passwordHash, isAdmin:false, createdAt:Date.now(), preference:{ presets:[], notes:'' } });
+    $('message').textContent='Signup successful! Redirecting...';
+    setTimeout(()=>{location.href=`account.html?room=${encodeURIComponent(room)}&userId=${encodeURIComponent(userId)}`},1000);
+  }
+});
+</script>
+</body>
+</html>

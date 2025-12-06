@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Secret Santa — Account</title>
+<style>
+/* --- General body --- */
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #fff8f0 0%, #f5f5f5 100%);
+  margin: 0;
+  padding: 0;
+  color: #222;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+  background: #000 !important;
+}
+
+
+#santa-sleigh {
+  position: fixed;
+  top: 20px;          /* distance from top */
+  left: -120px;       /* start off-screen */
+  width: 120px;
+  height: 80px;
+  background: url('./santa.png') no-repeat center/contain;
+  z-index: 50;
+  animation: flySleigh 12s linear infinite;
+}
+
+@keyframes flySleigh {
+  0% { transform: translateX(0) translateY(0) rotate(-5deg); }
+  25% { transform: translateX(25vw) translateY(-10px) rotate(0deg); }
+  50% { transform: translateX(50vw) translateY(5px) rotate(5deg); }
+  75% { transform: translateX(75vw) translateY(-5px) rotate(0deg); }
+  100% { transform: translateX(120vw) translateY(0) rotate(-5deg); }
+}
+
+
+/* --- Wrapper card --- */
+.wrap {
+  max-width: 500px;
+  margin: 50px auto;
+  background: linear-gradient(145deg, #fff0f5, #ffe5e5);
+  padding: 36px 28px;
+  border-radius: 28px;
+  box-shadow: 0 12px 36px rgba(183,28,28,0.15), 0 4px 12px rgba(0,0,0,0.08);
+  border: 2px solid #ffd6d6;
+  position: relative;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+.wrap:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 48px rgba(183,28,28,0.2), 0 6px 18px rgba(0,0,0,0.12);
+}
+
+/* --- Header --- */
+h1 {
+  color: #b71c1c;
+  text-align: center;
+  font-size: 2.6rem;
+  margin-bottom: 12px;
+  letter-spacing: 1.5px;
+  text-shadow: 0 2px 6px #ffd700;
+  animation: fadeInBounce 1s ease forwards;
+}
+h4 {
+  color: #b71c1c;
+  margin-top: 32px;
+  font-size: 1.2rem;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+/* --- Inputs --- */
+input, textarea, button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid #eaeaea;
+  box-sizing: border-box;
+  font-size: 1.1rem;
+  margin-top: 10px;
+  background: #fff;
+  transition: border 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+input:focus, textarea:focus {
+  border: 2px solid #b71c1c;
+  outline: none;
+  box-shadow: 0 0 12px rgba(183,28,28,0.2);
+  transform: scale(1.02);
+}
+textarea { resize: vertical; min-height: 60px; }
+
+/* --- Buttons --- */
+.btn-pri {
+  background: linear-gradient(90deg, #b71c1c 50%, #ff1744 100%);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 18px;
+  font-size: 1.12rem;
+  box-shadow: 0 4px 12px rgba(183,28,28,0.15);
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+}
+.btn-pri:hover {
+  background: linear-gradient(90deg, #ff1744 50%, #b71c1c 100%);
+  box-shadow: 0 6px 18px rgba(183,28,28,0.2);
+  transform: translateY(-2px);
+}
+
+/* --- Preferences chips with images --- */
+.prefs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 12px;
+  margin-top: 14px;
+  justify-content: center;
+  background: linear-gradient(90deg, #fff8f0 0%, #ffe5e5 100%);
+  border-radius: 18px;
+  padding: 18px 10px 10px 10px;
+  box-shadow: 0 2px 12px rgba(183,28,28,0.05);
+  border: 1.5px solid #ffd6d6;
+  position: relative;
+}
+.pref-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1.5px solid #ffd6d6;
+  background: #fff8f5;
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: #b71c1c;
+  box-shadow: 0 2px 6px rgba(183,28,28,0.06);
+  transition: background 0.3s, box-shadow 0.3s, transform 0.2s, border-color 0.3s;
+  position: relative;
+}
+.pref-chip img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+.pref-chip.selected {
+  background: #ffe5e5;
+  border-color: #ff1744;
+  box-shadow: 0 4px 12px rgba(183,28,28,0.1);
+  transform: scale(1.05);
+}
+
+/* --- Floating welcome sparkles --- */
+#welcomeSparkles {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  pointer-events: none;
+  overflow: visible;
+  z-index: 5;
+}
+.welcome-sparkle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: floatSparkle 3s linear infinite;
+  opacity: 0;
+}
+@keyframes floatSparkle {
+  0% { transform: translateY(0) scale(0.5); opacity: 0; }
+  25% { opacity: 1; }
+  50% { transform: translateY(-20px) scale(1); opacity: 0.8; }
+  75% { transform: translateY(-40px) scale(0.8); opacity: 0.6; }
+  100% { transform: translateY(-60px) scale(0.5); opacity: 0; }
+}
+
+/* --- Chip sparkles --- */
+.pref-chip .sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: sparkle 0.6s ease-out forwards;
+}
+@keyframes sparkle {
+  0% { opacity: 0; transform: scale(0) rotate(0deg);}
+  50% { opacity: 1; transform: scale(1) rotate(45deg);}
+  100% { opacity: 0; transform: scale(0) rotate(90deg);}
+}
+
+/* --- Chip-to-welcome flying sparkles --- */
+.flying-sparkle {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: flyToWelcome 1s ease-out forwards;
+}
+@keyframes flyToWelcome {
+  0% { transform: translate(0,0) scale(0.5); opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
+}
+
+/* --- Countdown and messages --- */
+#timer { font-weight: 700; color: #0d47a1; margin-top: 22px; text-align:center; font-size:1.2rem; letter-spacing:0.5px; animation: pulse 2s infinite;}
+#assignmentOut { margin-top:22px; padding:20px; border-radius:18px; background:#fff3f3; border:1.5px solid #ffd9d9; font-weight:600; text-align:center; font-size:1.12rem; color:#b71c1c; box-shadow:0 2px 12px rgba(183,28,28,0.08); transition: transform 0.3s, box-shadow 0.3s;}
+#assignmentOut.revealed { animation: revealPop 0.8s cubic-bezier(.68,-0.55,.27,1.55); transform: scale(1.05);}
+.message { margin-top:16px; color:#b71c1c; font-weight:600; text-align:center; font-size:1.08rem; animation: fadeIn 0.5s ease forwards; }
+
+/* --- Welcome card --- */
+.welcome-card {
+  background: linear-gradient(90deg, #ffe5e5 0%, #fff8f0 100%);
+  border-radius: 20px;
+  box-shadow: 0 4px 18px rgba(183,28,28,0.1);
+  padding: 20px 0;
+  margin: 0 0 14px 0;
+  font-size: 1.3rem;
+  color: #b71c1c;
+  text-align: center;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  animation: bounceIn 1.2s ease forwards;
+}
+.welcome-card:hover { box-shadow: 0 6px 24px rgba(183,28,28,0.18); transform: translateY(-2px); }
+
+/* --- Snowflakes --- */
+.snowflake {
+  position: fixed;
+  top: -10px;
+  color: #fff;
+  font-size: 12px;
+  user-select: none;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.8;
+  animation-name: fall;
+  animation-timing-function: linear;
+}
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0.8; }
+  50% { opacity: 1; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0.2; }
+}
+
+/* --- Animations --- */
+@keyframes chipBounce {0%{transform:scale(1);}30%{transform:scale(1.15);}50%{transform:scale(0.95);}70%{transform:scale(1.05);}100%{transform:scale(1);}}
+@keyframes pulse {0%{transform:scale(1);}50%{transform:scale(1.05);}100%{transform:scale(1);}}
+@keyframes revealPop {0%{transform:scale(0.8);opacity:0;}60%{transform:scale(1.08);opacity:1;}80%{transform:scale(0.96);}100%{transform:scale(1);}}
+@keyframes fadeIn {0%{opacity:0;}100%{opacity:1;}}
+@keyframes fadeInBounce {0%{opacity:0;transform:translateY(-20px);}60%{opacity:1;transform:translateY(10px);}100%{transform:translateY(0);}}
+@keyframes bounceIn {0%{transform:scale(0.5);opacity:0;}60%{transform:scale(1.1);opacity:1;}80%{transform:scale(0.95);}100%{transform:scale(1);}}
+
+@media (max-width: 600px) {
+  .wrap { max-width:95vw; padding:18px 6vw; border-radius:16px;}
+  h1 { font-size:1.8rem;}
+  #assignmentOut { font-size:1rem; padding:14px;}
+  .welcome-card { font-size:1.1rem;}
+  #timer { font-size:1rem;}
+}
+
+.btn-secondary {
+  background:#666;
+  color:#fff;
+  border:none;
+}
+.btn-secondary:hover { background:#444; }
+
+
+</style>
+</head>
+
+<body>
+
+<!-- <div class="sleigh" style="top: 20px; animation-duration: 12s;"></div> -->
+
+<div class="wrap">
+<div id="santa-sleigh"></div>
+<h1><i>Secret Santa 2k25</i></h1>
+<div id="welcome" class="welcome-card"></div>
+<div id="welcomeSparkles"></div>
+
+<div id="timer"></div>
+<div id="assignmentOut"></div>
+
+<h4>Your Preferences</h4>
+<div class="prefs" id="presetPrefs"></div>
+<label>Notes / custom preferences</label>
+<textarea id="notes" rows="3" placeholder="e.g. I love dark chocolate, or cozy socks"></textarea>
+<button id="savePrefs" class="btn-pri">Save Preferences</button>
+<div id="prefsMsg" class="message"></div>
+
+<button id="logoutBtn" class="btn-secondary">Logout</button>
+
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
+import { getDatabase, ref, get, set } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBrtZ7ZOlJi58Ff7hr-0qlF9jzVifVoBMY",
+  authDomain: "secret-santa-ac0f2.firebaseapp.com",
+  databaseURL: "https://secret-santa-ac0f2-default-rtdb.firebaseio.com",
+  projectId: "secret-santa-ac0f2",
+  storageBucket: "secret-santa-ac0f2.firebasestorage.app",
+  messagingSenderId: "1059165518816",
+  appId: "1:1059165518816:web:f20a754751db08442dc985"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const $ = id => document.getElementById(id);
+
+const urlParams = new URLSearchParams(location.search);
+const room = urlParams.get('room');
+const userId = urlParams.get('userId');
+const PRESETS = ["Chocolates","Books","Plants","Stationery","Tech/Gadgets","Coffee/Tea","Socks/Warm items","Surprise me"];
+const IMAGES = {
+  "Chocolates": "https://img.icons8.com/color/48/000000/chocolate-bar.png",
+  // "Skincare": "https://img.icons8.com/color/48/000000/face-cream.png",
+  // "Candles": "https://img.icons8.com/fluency/48/000000/candle.png",
+  "Books": "https://img.icons8.com/color/48/000000/open-book.png",
+  "Plants": "https://img.icons8.com/color/48/000000/potted-plant.png",
+  "Stationery": "https://img.icons8.com/color/48/000000/pencil.png",
+  "Tech/Gadgets": "https://img.icons8.com/color/48/000000/smartphone.png",
+  "Coffee/Tea": "https://img.icons8.com/color/48/000000/coffee.png",
+  "Socks/Warm items": "https://img.icons8.com/color/48/000000/socks.png",
+  "Surprise me": "https://img.icons8.com/color/48/000000/gift.png"
+
+  // "Chocolates": "https://img.icons8.com/fluency/48/000000/chocolate-bar.png",
+  // "Skincare": "https://img.icons8.com/color/48/000000/face-cream.png",
+  // "Candles": "https://img.icons8.com/fluency/48/000000/candle.png",
+  // "Books": "https://img.icons8.com/fluency/48/000000/open-book.png",
+  // "Plants": "https://img.icons8.com/fluency/48/000000/potted-plant.png",
+  // "Stationery": "https://img.icons8.com/fluency/48/000000/pencil.png",
+  // "Tech/Gadgets": "https://img.icons8.com/fluency/48/000000/smartphone.png",
+  // "Coffee/Tea": "https://img.icons8.com/fluency/48/000000/coffee.png",
+  // "Socks/Warm items": "https://img.icons8.com/fluency/48/000000/socks.png",
+  // "Surprise me": "https://img.icons8.com/fluency/48/000000/gift.png"
+};
+
+if(!room || !userId){ alert('Invalid access'); location.href='login.html'; }
+
+async function loadAccount(){
+  const userSnap = await get(ref(db, `rooms/${room}/participants/${userId}`));
+  if(!userSnap.exists()) return alert('User not found');
+  const u = userSnap.val();
+  $('welcome').textContent = `Hey ${u.name}`;
+
+  // Preference chips
+  const container = $('presetPrefs'); container.innerHTML='';
+  PRESETS.forEach((p,i)=>{
+    const chip = document.createElement('div');
+    chip.className='pref-chip';
+    chip.innerHTML=`<img src="${IMAGES[p]}" alt="${p}"/> ${p}`;
+    if(u.preference?.presets?.includes(p)) chip.classList.add('selected');
+
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('selected');
+
+      // Bounce animation
+      chip.style.animation='chipBounce 0.6s';
+      chip.addEventListener('animationend',()=>{chip.style.animation='';},{once:true});
+
+      // Chip sparkles
+      const colors=['#FFD700','#FF1744','#4CAF50'];
+      for(let i=0;i<3;i++){
+        const sparkle=document.createElement('div');
+        sparkle.className='sparkle';
+        sparkle.style.background=colors[Math.floor(Math.random()*colors.length)];
+        sparkle.style.left=`${Math.random()*80+10}%`;
+        sparkle.style.top=`${Math.random()*60+10}%`;
+        chip.appendChild(sparkle);
+        setTimeout(()=>sparkle.remove(),600);
+      }
+
+      // Flying sparkles to welcome
+      const welcomeRect=$('welcome').getBoundingClientRect();
+      const chipRect=chip.getBoundingClientRect();
+      for(let i=0;i<2;i++){
+        const fly=document.createElement('div');
+        fly.className='flying-sparkle';
+        fly.style.background=colors[Math.floor(Math.random()*colors.length)];
+        fly.style.left=chipRect.left+Math.random()*chipRect.width+'px';
+        fly.style.top=chipRect.top+Math.random()*chipRect.height+'px';
+        const dx=welcomeRect.left+welcomeRect.width/2-(chipRect.left+chipRect.width/2);
+        const dy=welcomeRect.top+welcomeRect.height/2-(chipRect.top+chipRect.height/2);
+        fly.style.setProperty('--dx',dx+'px');
+        fly.style.setProperty('--dy',dy+'px');
+        document.body.appendChild(fly);
+        setTimeout(()=>fly.remove(),1000);
+      }
+    });
+
+    container.appendChild(chip);
+  });
+
+  $('notes').value=u.preference?.notes||'';
+
+  // Countdown timer
+  const roomSnap = await get(ref(db, `rooms/${room}`));
+  const revealTS=roomSnap.val()?.revealTime||null;
+  if(revealTS){
+    const timerEl=$('timer');
+    const interval=setInterval(tick,1000);
+    function tick(){
+      const diff=revealTS-Date.now();
+      if(diff<=0){ timerEl.textContent="🎉 It's reveal time!"; showAssignment(); clearInterval(interval); return;}
+      const h=Math.floor(diff/36e5), m=Math.floor((diff%36e5)/6e4), s=Math.floor((diff%6e4)/1000);
+      timerEl.textContent=`Reveal in ${h}h ${m}m ${s}s`;
+    }
+    tick();
+    
+  }
+
+  // Show assignment
+  async function showAssignment(){
+    const userSnap2=await get(ref(db, `rooms/${room}/participants/${userId}`));
+    const userData=userSnap2.val()||{};
+    if(userData.assignedTo){
+      const assignedSnap=await get(ref(db, `rooms/${room}/participants/${userData.assignedTo}`));
+      const assigned=assignedSnap.val()||{name:'(unknown)'};
+      const out=`<div style="font-size:1.3rem;">
+        <span style="font-size:2.2rem;">🎉🎁✨</span><br>
+        <span style="font-size:1.1rem;color:#0d47a1;font-weight:600;"></span><br>
+        <span style="font-size:1.15rem;">You are the <span style='color:#b71c1c;font-weight:bold;text-shadow:0 2px 8px #ffd700;'>Secret Santa</span> for:</span><br>
+        <span style='font-size:1.35rem;font-weight:bold;color:#b71c1c;text-shadow:0 2px 8px #ffd700;'>${assigned.name}</span><br>
+        <span style='font-size:1.05rem;color:#388e3c;'>🎁 Their preferences:</span><br>
+        <span style='font-size:1.05rem;color:#b71c1c;'>${assigned.preference?.presets?.join(', ')||''}</span><br>
+        <span style='font-size:1.05rem;color:#b71c1c;'>${assigned.preference?.notes||''}</span><br>
+        <span style='font-size:1.1rem;color:#ff1744;'>Spread joy and keep it a secret! 🤫</span>
+      </div>`;
+      const assignmentEl=$('assignmentOut');
+      assignmentEl.innerHTML=out;
+      assignmentEl.classList.add('revealed');
+      setTimeout(()=>assignmentEl.classList.remove('revealed'),1800);
+    }
+  }
+
+  $('logoutBtn').addEventListener('click', ()=>{ location.href='login.html?room='+`${room}`});
+}
+
+// Save preferences
+$('savePrefs').addEventListener('click', async ()=>{
+  const picked=[];
+  document.querySelectorAll('.pref-chip.selected').forEach(c=>picked.push(c.textContent.trim()));
+  const notes=$('notes').value;
+  await set(ref(db, `rooms/${room}/participants/${userId}/preference`), { presets:picked, notes });
+  $('prefsMsg').textContent='Preferences saved ✅';
+  setTimeout(()=>{$('prefsMsg').textContent='';},2000);
+  await loadAccount();
+});
+
+// Welcome sparkles
+function spawnSparkle(){
+  const colors=['#FFD700','#FF1744','#4CAF50'];
+  const sparkle=document.createElement('div');
+  sparkle.className='welcome-sparkle';
+  sparkle.style.background=colors[Math.floor(Math.random()*colors.length)];
+  sparkle.style.left=Math.random()*90+'%';
+  sparkle.style.top='80%';
+  sparkle.style.animationDuration=(2+Math.random()*2)+'s';
+  $('welcomeSparkles').appendChild(sparkle);
+  setTimeout(()=>sparkle.remove(),4000);
+}
+setInterval(spawnSparkle,300);
+
+// Snowflakes
+function spawnSnowflake(){
+  const snowflake=document.createElement('div');
+  snowflake.className='snowflake';
+  snowflake.style.left=Math.random()*window.innerWidth+'px';
+  snowflake.style.fontSize=(8+Math.random()*12)+'px';
+  snowflake.style.animationDuration=(5+Math.random()*5)+'s';
+  snowflake.style.opacity=Math.random()*0.8+0.2;
+  snowflake.textContent='❄';
+  document.body.appendChild(snowflake);
+  setTimeout(()=>snowflake.remove(),parseFloat(snowflake.style.animationDuration)*1000);
+}
+setInterval(spawnSnowflake,200);
+
+loadAccount();
+</script>
+</body>
+</html>

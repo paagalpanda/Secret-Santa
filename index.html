@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Secret Santa — Create Room</title>
+<style>
+  body{font-family:Arial,sans-serif;background:#fff8f5;padding:24px;color:#222;}
+  .card{max-width:500px;margin:50px auto;padding:20px;background:#fff;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.1);}
+  h1{color:#b71c1c;margin:0 0 12px 0}
+  label{display:block;margin-top:12px;font-weight:600}
+  input,button{width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;margin-top:6px;box-sizing:border-box}
+  .btn-pri{background:#b71c1c;color:#fff;border:none;cursor:pointer;margin-top:12px}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>Create Secret Santa Room</h1>
+<label>Room Name</label>
+<input id="roomName" placeholder="Enter room name"/>
+<label>Admin Username</label>
+<input id="adminUsername" placeholder="Enter admin username"/>
+<label>Password</label>
+<input type="password" id="adminPassword" placeholder="Enter password"/>
+<div class="row">
+<button id="createRoomBtn" class="btn-pri">Create Room</button>
+</div>
+<div id="message" style="margin-top:12px;color:#b71c1c;"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js';
+import { getDatabase, ref, set, get, push } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBrtZ7ZOlJi58Ff7hr-0qlF9jzVifVoBMY",
+  authDomain: "secret-santa-ac0f2.firebaseapp.com",
+  databaseURL: "https://secret-santa-ac0f2-default-rtdb.firebaseio.com",
+  projectId: "secret-santa-ac0f2",
+  storageBucket: "secret-santa-ac0f2.firebasestorage.app",
+  messagingSenderId: "1059165518816",
+  appId: "1:1059165518816:web:f20a754751db08442dc985"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const $ = id => document.getElementById(id);
+
+// Simple hashing (SHA-256)
+async function hashPassword(pw){
+  const enc = new TextEncoder();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', enc.encode(pw));
+  return Array.from(new Uint8Array(hashBuffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+$('createRoomBtn').addEventListener('click', async ()=>{
+  const room = $('roomName').value.trim();
+  const username = $('adminUsername').value.trim();
+  const password = $('adminPassword').value.trim();
+  if(!room || !username || !password) return $('message').textContent='All fields are required';
+  
+  const roomRef = ref(db, `rooms/${room}`);
+  const roomSnap = await get(roomRef);
+  if(roomSnap.exists()) return $('message').textContent='Room already exists';
+
+  const passwordHash = await hashPassword(password);
+  const adminRef = push(ref(db, `rooms/${room}/participants`));
+  const adminId = adminRef.key;
+
+  await set(adminRef, {
+    name: username,
+    username,
+    passwordHash,
+    isAdmin: true,
+    createdAt: Date.now(),
+    preference: { presets: [], notes: '' }
+  });
+
+  $('message').textContent='Room created! Redirecting...';
+  setTimeout(()=>{location.href=`login.html?room=${encodeURIComponent(room)}`}, 1000);
+});
+</script>
+</body>
+</html>
